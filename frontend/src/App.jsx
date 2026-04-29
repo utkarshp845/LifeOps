@@ -9,9 +9,12 @@ import DailyMetrics from "./pages/body/DailyMetrics.jsx";
 import GolfLog from "./pages/body/GolfLog.jsx";
 import WorkoutHistory from "./pages/body/WorkoutHistory.jsx";
 import WorkoutLog from "./pages/body/WorkoutLog.jsx";
+import Build from "./pages/Build.jsx";
+import Markets from "./pages/Markets.jsx";
 import BookLog from "./pages/mind/BookLog.jsx";
 import DecisionJournal from "./pages/mind/DecisionJournal.jsx";
 import PhilosophyNotes from "./pages/mind/PhilosophyNotes.jsx";
+import Wealth from "./pages/Wealth.jsx";
 
 const routes = {
   "/": Dashboard,
@@ -22,7 +25,10 @@ const routes = {
   "/metrics": DailyMetrics,
   "/books": BookLog,
   "/philosophy": PhilosophyNotes,
-  "/decisions": DecisionJournal
+  "/decisions": DecisionJournal,
+  "/markets": Markets,
+  "/build": Build,
+  "/wealth": Wealth
 };
 
 function currentRoute() {

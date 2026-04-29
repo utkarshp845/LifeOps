@@ -19,6 +19,14 @@ const navGroups = [
       ["/philosophy", "Philosophy Notes"],
       ["/decisions", "Decision Journal"]
     ]
+  },
+  {
+    label: "Life",
+    links: [
+      ["/markets", "Markets"],
+      ["/build", "Build"],
+      ["/wealth", "Wealth"]
+    ]
   }
 ];
 

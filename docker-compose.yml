@@ -26,6 +26,8 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS}
       LIFEOS_USERNAME: ${LIFEOS_USERNAME}
       LIFEOS_PASSWORD: ${LIFEOS_PASSWORD}
+      MARKET_DATA_PROVIDER: ${MARKET_DATA_PROVIDER}
+      MARKET_DATA_API_KEY: ${MARKET_DATA_API_KEY}
     depends_on:
       db:
         condition: service_healthy

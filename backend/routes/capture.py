@@ -9,12 +9,18 @@ from sqlalchemy.orm import Session
 from auth import get_current_user
 from database import get_db
 from models.body import DailyMetric, Exercise, GolfRound, Workout
+from models.build import BuildProject
 from models.capture import CaptureItem
+from models.markets import MarketStock
 from models.mind import Book, Decision, PhilosophyNote
 from models.user import User
+from models.wealth import WealthSnapshot
 from schemas.body import DailyMetricCreate, GolfRoundCreate, WorkoutCreate
+from schemas.build import BuildProjectCreate
 from schemas.capture import CaptureArchive, CaptureConvert, CaptureRead, CaptureStatus, CaptureTarget, CaptureCreate
+from schemas.markets import MarketStockCreate
 from schemas.mind import BookCreate, DecisionCreate, PhilosophyNoteCreate
+from schemas.wealth import WealthSnapshotCreate
 
 router = APIRouter(prefix="/captures", tags=["captures"], dependencies=[Depends(get_current_user)])
 
@@ -87,6 +93,21 @@ def _create_target(target_type: CaptureTarget, payload: dict, db: Session):
         return PhilosophyNote(**_validate(PhilosophyNoteCreate, payload).model_dump())
     if target_type == "decision":
         return Decision(**_validate(DecisionCreate, payload).model_dump())
+    if target_type == "stock":
+        validated = _validate(MarketStockCreate, payload)
+        stock = MarketStock(**validated.model_dump())
+        stock.ticker = stock.ticker.strip().upper()
+        return stock
+    if target_type == "build_project":
+        return BuildProject(**_validate(BuildProjectCreate, payload).model_dump())
+    if target_type == "wealth_snapshot":
+        validated = _validate(WealthSnapshotCreate, payload)
+        existing = db.scalar(select(WealthSnapshot).where(WealthSnapshot.date == validated.date))
+        if existing is not None:
+            for key, value in validated.model_dump().items():
+                setattr(existing, key, value)
+            return existing
+        return WealthSnapshot(**validated.model_dump())
     raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Unsupported target type")
 
 

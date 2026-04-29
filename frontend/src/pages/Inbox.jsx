@@ -12,7 +12,10 @@ const targets = [
   ["golf", "Golf Round"],
   ["book", "Book"],
   ["philosophy", "Philosophy Note"],
-  ["decision", "Decision"]
+  ["decision", "Decision"],
+  ["stock", "Stock"],
+  ["build_project", "Build Project"],
+  ["wealth_snapshot", "Wealth Snapshot"]
 ];
 
 function emptyDraft(type, raw) {
@@ -22,6 +25,24 @@ function emptyDraft(type, raw) {
   if (type === "golf") return { date, course: "", score: "", notes: raw };
   if (type === "book") return { title: "", author: "", date_finished: "", my_reaction: raw };
   if (type === "philosophy") return { thinker: "", source: "", disturbance: raw, date };
+  if (type === "stock") return { ticker: "", company_name: "", shares: "", average_cost: "", watchlist: true, thesis: raw, notes: "" };
+  if (type === "build_project") {
+    return { name: "", description: raw, status: "building", shipped_at: "", url: "", repository_url: "", notes: "" };
+  }
+  if (type === "wealth_snapshot") {
+    return {
+      date,
+      cash: "",
+      investments: "",
+      retirement: "",
+      crypto: "",
+      other_assets: "",
+      debt: "",
+      annual_expenses: "",
+      financial_freedom_number: "",
+      notes: raw
+    };
+  }
   return { date, title: "", context: raw, reasoning: "", expected_outcome: "" };
 }
 
@@ -73,6 +94,42 @@ function conversionPayload(type, draft) {
       source: draft.source || null,
       disturbance: draft.disturbance,
       date: draft.date
+    };
+  }
+  if (type === "stock") {
+    return {
+      ticker: draft.ticker,
+      company_name: draft.company_name || null,
+      shares: numberOrNull(draft.shares),
+      average_cost: numberOrNull(draft.average_cost),
+      watchlist: draft.watchlist,
+      thesis: draft.thesis || null,
+      notes: draft.notes || null
+    };
+  }
+  if (type === "build_project") {
+    return {
+      name: draft.name,
+      description: draft.description || null,
+      status: draft.status,
+      shipped_at: draft.shipped_at || null,
+      url: draft.url || null,
+      repository_url: draft.repository_url || null,
+      notes: draft.notes || null
+    };
+  }
+  if (type === "wealth_snapshot") {
+    return {
+      date: draft.date,
+      cash: numberOrNull(draft.cash),
+      investments: numberOrNull(draft.investments),
+      retirement: numberOrNull(draft.retirement),
+      crypto: numberOrNull(draft.crypto),
+      other_assets: numberOrNull(draft.other_assets),
+      debt: numberOrNull(draft.debt),
+      annual_expenses: numberOrNull(draft.annual_expenses),
+      financial_freedom_number: numberOrNull(draft.financial_freedom_number),
+      notes: draft.notes || null
     };
   }
   return {
@@ -244,6 +301,113 @@ function ConvertForm({ item, onConverted }) {
           </Field>
           <Field label="Expected outcome">
             <textarea value={draft.expected_outcome} onChange={(event) => update("expected_outcome", event.target.value)} required />
+          </Field>
+        </>
+      ) : null}
+
+      {type === "stock" ? (
+        <>
+          <div className="row">
+            <Field label="Ticker">
+              <input value={draft.ticker} onChange={(event) => update("ticker", event.target.value)} required />
+            </Field>
+            <Field label="Company">
+              <input value={draft.company_name} onChange={(event) => update("company_name", event.target.value)} />
+            </Field>
+          </div>
+          <div className="row">
+            <Field label="Shares">
+              <input type="number" step="0.0001" value={draft.shares} onChange={(event) => update("shares", event.target.value)} />
+            </Field>
+            <Field label="Average cost">
+              <input type="number" step="0.01" value={draft.average_cost} onChange={(event) => update("average_cost", event.target.value)} />
+            </Field>
+          </div>
+          <label className="checkbox-line">
+            <input type="checkbox" checked={draft.watchlist} onChange={(event) => update("watchlist", event.target.checked)} />
+            Watchlist only
+          </label>
+          <Field label="Thesis">
+            <textarea value={draft.thesis} onChange={(event) => update("thesis", event.target.value)} />
+          </Field>
+          <Field label="Notes">
+            <textarea value={draft.notes} onChange={(event) => update("notes", event.target.value)} />
+          </Field>
+        </>
+      ) : null}
+
+      {type === "build_project" ? (
+        <>
+          <Field label="Name">
+            <input value={draft.name} onChange={(event) => update("name", event.target.value)} required />
+          </Field>
+          <Field label="Description">
+            <textarea value={draft.description} onChange={(event) => update("description", event.target.value)} />
+          </Field>
+          <div className="row">
+            <Field label="Status">
+              <select value={draft.status} onChange={(event) => update("status", event.target.value)}>
+                <option value="idea">Idea</option>
+                <option value="building">Building</option>
+                <option value="shipped">Shipped</option>
+                <option value="maintained">Maintained</option>
+                <option value="paused">Paused</option>
+              </select>
+            </Field>
+            <Field label="Shipped at">
+              <input type="date" value={draft.shipped_at} onChange={(event) => update("shipped_at", event.target.value)} />
+            </Field>
+          </div>
+          <div className="row">
+            <Field label="URL">
+              <input value={draft.url} onChange={(event) => update("url", event.target.value)} />
+            </Field>
+            <Field label="Repository">
+              <input value={draft.repository_url} onChange={(event) => update("repository_url", event.target.value)} />
+            </Field>
+          </div>
+          <Field label="Notes">
+            <textarea value={draft.notes} onChange={(event) => update("notes", event.target.value)} />
+          </Field>
+        </>
+      ) : null}
+
+      {type === "wealth_snapshot" ? (
+        <>
+          <Field label="Date">
+            <input type="date" value={draft.date} onChange={(event) => update("date", event.target.value)} required />
+          </Field>
+          <div className="row">
+            <Field label="Cash">
+              <input type="number" step="0.01" value={draft.cash} onChange={(event) => update("cash", event.target.value)} />
+            </Field>
+            <Field label="Investments">
+              <input type="number" step="0.01" value={draft.investments} onChange={(event) => update("investments", event.target.value)} />
+            </Field>
+          </div>
+          <div className="row">
+            <Field label="Retirement">
+              <input type="number" step="0.01" value={draft.retirement} onChange={(event) => update("retirement", event.target.value)} />
+            </Field>
+            <Field label="Debt">
+              <input type="number" step="0.01" value={draft.debt} onChange={(event) => update("debt", event.target.value)} />
+            </Field>
+          </div>
+          <div className="row">
+            <Field label="Annual expenses">
+              <input type="number" step="0.01" value={draft.annual_expenses} onChange={(event) => update("annual_expenses", event.target.value)} />
+            </Field>
+            <Field label="Freedom number">
+              <input
+                type="number"
+                step="0.01"
+                value={draft.financial_freedom_number}
+                onChange={(event) => update("financial_freedom_number", event.target.value)}
+              />
+            </Field>
+          </div>
+          <Field label="Notes">
+            <textarea value={draft.notes} onChange={(event) => update("notes", event.target.value)} />
           </Field>
         </>
       ) : null}

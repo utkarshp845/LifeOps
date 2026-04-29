@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import { bodyApi } from "../api/body";
 import { mindApi } from "../api/mind";
 import { captureApi } from "../api/capture";
+import { buildApi } from "../api/build";
+import { marketsApi } from "../api/markets";
+import { wealthApi } from "../api/wealth";
 import QuickCapture from "../components/QuickCapture.jsx";
 
 function parseDay(value) {
@@ -13,6 +16,11 @@ function Empty({ children }) {
   return <p className="muted">{children}</p>;
 }
 
+const money = (value) =>
+  value === null || value === undefined
+    ? "-"
+    : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
+
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
@@ -21,17 +29,20 @@ export default function Dashboard() {
     let cancelled = false;
     async function load() {
       try {
-        const [workouts, golf, metrics, books, philosophy, decisions, captures] = await Promise.all([
+        const [workouts, golf, metrics, books, philosophy, decisions, captures, stocks, projects, wealth] = await Promise.all([
           bodyApi.getWorkouts(),
           bodyApi.getGolf(),
           bodyApi.getMetrics(1),
           mindApi.getBooks(),
           mindApi.getPhilosophy(),
           mindApi.getDecisions(),
-          captureApi.getCaptures("open")
+          captureApi.getCaptures("open"),
+          marketsApi.getStocks(),
+          buildApi.getProjects(),
+          wealthApi.getSummary()
         ]);
         if (!cancelled) {
-          setData({ workouts, golf, metrics, books, philosophy, decisions, captures });
+          setData({ workouts, golf, metrics, books, philosophy, decisions, captures, stocks, projects, wealth });
         }
       } catch (err) {
         if (!cancelled) setError(err.message);
@@ -71,6 +82,35 @@ export default function Dashboard() {
           <p className="journal-text">{data?.captures?.length || 0} open captures</p>
           <a className="text-link" href="#/inbox">
             Process inbox
+          </a>
+        </article>
+
+        <article className="entry body-module">
+          <h2>Markets</h2>
+          <p className="metric-line">{data?.stocks?.length || 0} tracked stocks</p>
+          <a className="text-link" href="#/markets">
+            Review markets
+          </a>
+        </article>
+
+        <article className="entry mind-module">
+          <h2>Build</h2>
+          {data?.projects?.[0] ? (
+            <p className="journal-text">
+              {data.projects[0].name} / {data.projects[0].status}
+            </p>
+          ) : (
+            <Empty>No build projects logged.</Empty>
+          )}
+        </article>
+
+        <article className="entry body-module">
+          <h2>Wealth</h2>
+          <p className="metric-line">
+            {money(data?.wealth?.net_worth)} / {data?.wealth?.progress_pct !== null && data?.wealth?.progress_pct !== undefined ? `${data.wealth.progress_pct.toFixed(1)}%` : "-"}
+          </p>
+          <a className="text-link" href="#/wealth">
+            Track freedom
           </a>
         </article>
 

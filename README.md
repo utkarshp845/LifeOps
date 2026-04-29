@@ -48,6 +48,8 @@ The app expects these values in `.env`:
 - `JWT_ALGORITHM`
 - `ACCESS_TOKEN_EXPIRE_MINUTES`
 - `CORS_ORIGINS`
+- `MARKET_DATA_PROVIDER`
+- `MARKET_DATA_API_KEY`
 - `BACKEND_PORT`
 - `FRONTEND_PORT`
 - `VITE_API_URL`
@@ -128,6 +130,27 @@ Body:
 - `GET /metrics`
 - `POST /metrics`
 
+Markets:
+
+- `GET /markets/stocks`
+- `POST /markets/stocks`
+- `GET /markets/stocks/{id}`
+- `PATCH /markets/stocks/{id}`
+- `GET /markets/stocks/{id}/quote`
+
+Build:
+
+- `GET /build/projects`
+- `POST /build/projects`
+- `GET /build/projects/{id}`
+- `PATCH /build/projects/{id}`
+
+Wealth:
+
+- `GET /wealth/snapshots`
+- `POST /wealth/snapshots`
+- `GET /wealth/summary`
+
 Mind:
 
 - `GET /books`
@@ -168,6 +191,8 @@ SECRET_KEY=replace-with-a-long-random-secret
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=1440
 CORS_ORIGINS=http://your-domain-or-ec2-host
+MARKET_DATA_PROVIDER=alphavantage
+MARKET_DATA_API_KEY=replace-with-alpha-vantage-api-key
 
 BACKEND_PORT=8000
 FRONTEND_PORT=8080

@@ -5,7 +5,17 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 CaptureStatus = Literal["open", "archived", "converted"]
-CaptureTarget = Literal["workout", "golf", "metric", "book", "philosophy", "decision"]
+CaptureTarget = Literal[
+    "workout",
+    "golf",
+    "metric",
+    "book",
+    "philosophy",
+    "decision",
+    "stock",
+    "build_project",
+    "wealth_snapshot",
+]
 
 
 class CaptureCreate(BaseModel):

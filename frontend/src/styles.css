@@ -82,6 +82,10 @@ textarea {
   padding: 0.7rem 0.8rem;
 }
 
+input[type="checkbox"] {
+  width: auto;
+}
+
 textarea {
   min-height: 9rem;
   resize: vertical;
@@ -410,6 +414,39 @@ th {
   color: var(--accent-strong);
   font-family: var(--sans);
   font-weight: 700;
+}
+
+.checkbox-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-family: var(--sans);
+}
+
+.split-heading {
+  display: flex;
+  gap: 0.8rem;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.link-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.metric-large {
+  margin: 0.5rem 0 0;
+  font-family: var(--mono);
+  font-size: clamp(1.7rem, 4vw, 3rem);
+  line-height: 1;
+  color: var(--text);
+}
+
+.section-gap {
+  margin-top: 1rem;
 }
 
 @media (max-width: 860px) {

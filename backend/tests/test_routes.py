@@ -15,6 +15,7 @@ from database import Base, get_db
 from main import app
 from models.user import User
 import models  # noqa: F401
+import routes.markets as markets_routes
 
 
 def _client():
@@ -94,6 +95,59 @@ def create_decision(client: TestClient, headers: dict[str, str]) -> dict:
 
 def create_capture(client: TestClient, headers: dict[str, str], raw_text: str = "bench 185 5x5") -> dict:
     response = client.post("/captures", headers=headers, json={"raw_text": raw_text})
+    assert response.status_code == 201
+    return response.json()
+
+
+def create_stock(client: TestClient, headers: dict[str, str]) -> dict:
+    response = client.post(
+        "/markets/stocks",
+        headers=headers,
+        json={
+            "ticker": "aapl",
+            "company_name": "Apple Inc.",
+            "shares": 5,
+            "average_cost": 150,
+            "thesis": "Durable ecosystem.",
+        },
+    )
+    assert response.status_code == 201
+    return response.json()
+
+
+def create_build_project(client: TestClient, headers: dict[str, str]) -> dict:
+    response = client.post(
+        "/build/projects",
+        headers=headers,
+        json={
+            "name": "Life OS",
+            "description": "Personal operating system.",
+            "status": "shipped",
+            "shipped_at": "2026-04-29",
+            "url": "https://example.com",
+        },
+    )
+    assert response.status_code == 201
+    return response.json()
+
+
+def create_wealth_snapshot(client: TestClient, headers: dict[str, str]) -> dict:
+    response = client.post(
+        "/wealth/snapshots",
+        headers=headers,
+        json={
+            "date": "2026-04-29",
+            "cash": 10000,
+            "investments": 50000,
+            "retirement": 40000,
+            "crypto": 5000,
+            "other_assets": 15000,
+            "debt": 20000,
+            "annual_expenses": 50000,
+            "financial_freedom_number": 1250000,
+            "notes": "Baseline.",
+        },
+    )
     assert response.status_code == 201
     return response.json()
 
@@ -183,6 +237,137 @@ def test_capture_convert_route_rejects_repeat_conversion():
 
         second = client.post(f"/captures/{capture['id']}/convert", headers=headers, json=payload)
         assert second.status_code == 400
+
+
+def test_capture_convert_route_supports_build_project():
+    for client in _client():
+        headers = auth_headers(client)
+        capture = create_capture(client, headers, "Ship Life OS")
+        response = client.post(
+            f"/captures/{capture['id']}/convert",
+            headers=headers,
+            json={
+                "target_type": "build_project",
+                "payload": {
+                    "name": "Life OS",
+                    "description": "Ship Life OS",
+                    "status": "shipped",
+                    "shipped_at": "2026-04-29",
+                },
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["target_type"] == "build_project"
+
+
+def test_get_market_stocks_route():
+    for client in _client():
+        response = client.get("/markets/stocks", headers=auth_headers(client))
+        assert response.status_code == 200
+        assert response.json() == []
+
+
+def test_post_market_stocks_route():
+    for client in _client():
+        stock = create_stock(client, auth_headers(client))
+        assert stock["ticker"] == "AAPL"
+        assert stock["shares"] == 5.0
+
+
+def test_get_market_stock_by_id_route():
+    for client in _client():
+        headers = auth_headers(client)
+        stock = create_stock(client, headers)
+        response = client.get(f"/markets/stocks/{stock['id']}", headers=headers)
+        assert response.status_code == 200
+        assert response.json()["company_name"] == "Apple Inc."
+
+
+def test_patch_market_stock_route():
+    for client in _client():
+        headers = auth_headers(client)
+        stock = create_stock(client, headers)
+        response = client.patch(f"/markets/stocks/{stock['id']}", headers=headers, json={"watchlist": True, "shares": 6})
+        assert response.status_code == 200
+        assert response.json()["watchlist"] is True
+        assert response.json()["shares"] == 6.0
+
+
+def test_get_market_stock_quote_route(monkeypatch):
+    for client in _client():
+        headers = auth_headers(client)
+        stock = create_stock(client, headers)
+
+        def fake_quote(ticker):
+            return {
+                "ticker": ticker,
+                "price": 210.5,
+                "change_amount": 1.2,
+                "change_percent": 0.57,
+                "currency": "USD",
+                "provider": "alphavantage",
+            }
+
+        monkeypatch.setattr(markets_routes, "fetch_quote_from_provider", fake_quote)
+        response = client.get(f"/markets/stocks/{stock['id']}/quote", headers=headers)
+        assert response.status_code == 200
+        assert response.json()["price"] == 210.5
+
+
+def test_get_build_projects_route():
+    for client in _client():
+        response = client.get("/build/projects", headers=auth_headers(client))
+        assert response.status_code == 200
+        assert response.json() == []
+
+
+def test_post_build_projects_route():
+    for client in _client():
+        project = create_build_project(client, auth_headers(client))
+        assert project["name"] == "Life OS"
+        assert project["status"] == "shipped"
+
+
+def test_get_build_project_by_id_route():
+    for client in _client():
+        headers = auth_headers(client)
+        project = create_build_project(client, headers)
+        response = client.get(f"/build/projects/{project['id']}", headers=headers)
+        assert response.status_code == 200
+        assert response.json()["description"] == "Personal operating system."
+
+
+def test_patch_build_project_route():
+    for client in _client():
+        headers = auth_headers(client)
+        project = create_build_project(client, headers)
+        response = client.patch(f"/build/projects/{project['id']}", headers=headers, json={"status": "maintained"})
+        assert response.status_code == 200
+        assert response.json()["status"] == "maintained"
+
+
+def test_get_wealth_snapshots_route():
+    for client in _client():
+        response = client.get("/wealth/snapshots", headers=auth_headers(client))
+        assert response.status_code == 200
+        assert response.json() == []
+
+
+def test_post_wealth_snapshots_route():
+    for client in _client():
+        snapshot = create_wealth_snapshot(client, auth_headers(client))
+        assert snapshot["net_worth"] == 100000.0
+        assert snapshot["progress_pct"] == 8.0
+
+
+def test_get_wealth_summary_route():
+    for client in _client():
+        headers = auth_headers(client)
+        create_wealth_snapshot(client, headers)
+        response = client.get("/wealth/summary", headers=headers)
+        assert response.status_code == 200
+        assert response.json()["net_worth"] == 100000.0
+        assert response.json()["runway_years"] == 2.0
 
 
 def test_get_workouts_route():
