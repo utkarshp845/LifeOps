@@ -15,7 +15,9 @@ const targets = [
   ["decision", "Decision"],
   ["stock", "Stock"],
   ["build_project", "Build Project"],
-  ["wealth_snapshot", "Wealth Snapshot"]
+  ["wealth_snapshot", "Wealth Snapshot"],
+  ["goal", "Goal"],
+  ["review", "Review"]
 ];
 
 function emptyDraft(type, raw) {
@@ -42,6 +44,12 @@ function emptyDraft(type, raw) {
       financial_freedom_number: "",
       notes: raw
     };
+  }
+  if (type === "goal") {
+    return { title: "", why: raw, status: "active", target_date: "", metric_name: "", target_value: "", current_value: "", unit: "", notes: "" };
+  }
+  if (type === "review") {
+    return { kind: "weekly", date, wins: raw, friction: "", lessons: "", next_actions: "", notes: "" };
   }
   return { date, title: "", context: raw, reasoning: "", expected_outcome: "" };
 }
@@ -129,6 +137,30 @@ function conversionPayload(type, draft) {
       debt: numberOrNull(draft.debt),
       annual_expenses: numberOrNull(draft.annual_expenses),
       financial_freedom_number: numberOrNull(draft.financial_freedom_number),
+      notes: draft.notes || null
+    };
+  }
+  if (type === "goal") {
+    return {
+      title: draft.title,
+      why: draft.why || null,
+      status: draft.status,
+      target_date: draft.target_date || null,
+      metric_name: draft.metric_name || null,
+      target_value: numberOrNull(draft.target_value),
+      current_value: numberOrNull(draft.current_value),
+      unit: draft.unit || null,
+      notes: draft.notes || null
+    };
+  }
+  if (type === "review") {
+    return {
+      kind: draft.kind,
+      date: draft.date,
+      wins: draft.wins || null,
+      friction: draft.friction || null,
+      lessons: draft.lessons || null,
+      next_actions: draft.next_actions || null,
       notes: draft.notes || null
     };
   }
@@ -408,6 +440,68 @@ function ConvertForm({ item, onConverted }) {
           </div>
           <Field label="Notes">
             <textarea value={draft.notes} onChange={(event) => update("notes", event.target.value)} />
+          </Field>
+        </>
+      ) : null}
+
+      {type === "goal" ? (
+        <>
+          <Field label="Title">
+            <input value={draft.title} onChange={(event) => update("title", event.target.value)} required />
+          </Field>
+          <Field label="Why">
+            <textarea value={draft.why} onChange={(event) => update("why", event.target.value)} />
+          </Field>
+          <div className="row">
+            <Field label="Target date">
+              <input type="date" value={draft.target_date} onChange={(event) => update("target_date", event.target.value)} />
+            </Field>
+            <Field label="Metric">
+              <input value={draft.metric_name} onChange={(event) => update("metric_name", event.target.value)} />
+            </Field>
+          </div>
+          <div className="row">
+            <Field label="Current">
+              <input type="number" step="0.01" value={draft.current_value} onChange={(event) => update("current_value", event.target.value)} />
+            </Field>
+            <Field label="Target">
+              <input type="number" step="0.01" value={draft.target_value} onChange={(event) => update("target_value", event.target.value)} />
+            </Field>
+          </div>
+          <Field label="Unit">
+            <input value={draft.unit} onChange={(event) => update("unit", event.target.value)} />
+          </Field>
+          <Field label="Notes">
+            <textarea value={draft.notes} onChange={(event) => update("notes", event.target.value)} />
+          </Field>
+        </>
+      ) : null}
+
+      {type === "review" ? (
+        <>
+          <div className="row">
+            <Field label="Kind">
+              <select value={draft.kind} onChange={(event) => update("kind", event.target.value)}>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </Field>
+            <Field label="Date">
+              <input type="date" value={draft.date} onChange={(event) => update("date", event.target.value)} required />
+            </Field>
+          </div>
+          <Field label="Wins">
+            <textarea value={draft.wins} onChange={(event) => update("wins", event.target.value)} />
+          </Field>
+          <Field label="Friction">
+            <textarea value={draft.friction} onChange={(event) => update("friction", event.target.value)} />
+          </Field>
+          <Field label="Lessons">
+            <textarea value={draft.lessons} onChange={(event) => update("lessons", event.target.value)} />
+          </Field>
+          <Field label="Next actions">
+            <textarea value={draft.next_actions} onChange={(event) => update("next_actions", event.target.value)} />
           </Field>
         </>
       ) : null}

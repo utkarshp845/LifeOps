@@ -10,7 +10,9 @@ import GolfLog from "./pages/body/GolfLog.jsx";
 import WorkoutHistory from "./pages/body/WorkoutHistory.jsx";
 import WorkoutLog from "./pages/body/WorkoutLog.jsx";
 import Build from "./pages/Build.jsx";
+import Goals from "./pages/Goals.jsx";
 import Markets from "./pages/Markets.jsx";
+import Reviews from "./pages/Reviews.jsx";
 import BookLog from "./pages/mind/BookLog.jsx";
 import DecisionJournal from "./pages/mind/DecisionJournal.jsx";
 import PhilosophyNotes from "./pages/mind/PhilosophyNotes.jsx";
@@ -19,6 +21,8 @@ import Wealth from "./pages/Wealth.jsx";
 const routes = {
   "/": Dashboard,
   "/inbox": Inbox,
+  "/goals": Goals,
+  "/reviews": Reviews,
   "/workout": WorkoutLog,
   "/workouts": WorkoutHistory,
   "/golf": GolfLog,

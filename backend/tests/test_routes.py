@@ -152,6 +152,55 @@ def create_wealth_snapshot(client: TestClient, headers: dict[str, str]) -> dict:
     return response.json()
 
 
+def create_area(client: TestClient, headers: dict[str, str]) -> dict:
+    response = client.post(
+        "/goals/areas",
+        headers=headers,
+        json={"name": "Health", "description": "Body, sleep, and energy.", "position": 1},
+    )
+    assert response.status_code == 201
+    return response.json()
+
+
+def create_goal(client: TestClient, headers: dict[str, str]) -> dict:
+    area = create_area(client, headers)
+    response = client.post(
+        "/goals",
+        headers=headers,
+        json={
+            "area_id": area["id"],
+            "title": "Sleep 7 hours consistently",
+            "why": "Energy drives everything else.",
+            "target_date": "2026-05-15",
+            "metric_name": "Average sleep",
+            "target_value": 7,
+            "current_value": 6,
+            "unit": "hours",
+        },
+    )
+    assert response.status_code == 201
+    return response.json()
+
+
+def create_review(client: TestClient, headers: dict[str, str]) -> dict:
+    goal = create_goal(client, headers)
+    response = client.post(
+        "/reviews",
+        headers=headers,
+        json={
+            "kind": "weekly",
+            "date": "2026-04-29",
+            "goal_id": goal["id"],
+            "wins": "Protected mornings.",
+            "friction": "Late screens.",
+            "lessons": "Environment beats willpower.",
+            "next_actions": "Phone outside bedroom.",
+        },
+    )
+    assert response.status_code == 201
+    return response.json()
+
+
 def test_auth_login_route():
     for client in _client():
         response = client.post("/auth/login", json={"username": "test", "password": "password"})
@@ -258,6 +307,133 @@ def test_capture_convert_route_supports_build_project():
         )
         assert response.status_code == 200
         assert response.json()["target_type"] == "build_project"
+
+
+def test_capture_convert_route_supports_goal():
+    for client in _client():
+        headers = auth_headers(client)
+        capture = create_capture(client, headers, "Reach financial freedom")
+        response = client.post(
+            f"/captures/{capture['id']}/convert",
+            headers=headers,
+            json={
+                "target_type": "goal",
+                "payload": {
+                    "title": "Reach financial freedom",
+                    "why": "Own my time.",
+                    "metric_name": "Net worth",
+                    "target_value": 1250000,
+                    "current_value": 100000,
+                    "unit": "USD",
+                },
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["target_type"] == "goal"
+
+
+def test_get_goal_areas_route():
+    for client in _client():
+        response = client.get("/goals/areas", headers=auth_headers(client))
+        assert response.status_code == 200
+        assert response.json() == []
+
+
+def test_post_goal_areas_route():
+    for client in _client():
+        area = create_area(client, auth_headers(client))
+        assert area["name"] == "Health"
+
+
+def test_patch_goal_area_route():
+    for client in _client():
+        headers = auth_headers(client)
+        area = create_area(client, headers)
+        response = client.patch(f"/goals/areas/{area['id']}", headers=headers, json={"position": 2})
+        assert response.status_code == 200
+        assert response.json()["position"] == 2
+
+
+def test_get_goals_route():
+    for client in _client():
+        response = client.get("/goals", headers=auth_headers(client))
+        assert response.status_code == 200
+        assert response.json() == []
+
+
+def test_post_goals_route():
+    for client in _client():
+        goal = create_goal(client, auth_headers(client))
+        assert goal["title"] == "Sleep 7 hours consistently"
+        assert round(goal["progress_pct"], 2) == 85.71
+
+
+def test_get_goal_by_id_route():
+    for client in _client():
+        headers = auth_headers(client)
+        goal = create_goal(client, headers)
+        response = client.get(f"/goals/{goal['id']}", headers=headers)
+        assert response.status_code == 200
+        assert response.json()["area"]["name"] == "Health"
+
+
+def test_patch_goal_route():
+    for client in _client():
+        headers = auth_headers(client)
+        goal = create_goal(client, headers)
+        response = client.patch(f"/goals/{goal['id']}", headers=headers, json={"current_value": 7, "status": "achieved"})
+        assert response.status_code == 200
+        assert response.json()["status"] == "achieved"
+        assert response.json()["progress_pct"] == 100.0
+
+
+def test_get_goals_summary_route():
+    for client in _client():
+        headers = auth_headers(client)
+        create_goal(client, headers)
+        response = client.get("/goals/summary", headers=headers)
+        assert response.status_code == 200
+        assert response.json()["active_count"] == 1
+        assert response.json()["due_soon_count"] == 1
+
+
+def test_get_reviews_route():
+    for client in _client():
+        response = client.get("/reviews", headers=auth_headers(client))
+        assert response.status_code == 200
+        assert response.json() == []
+
+
+def test_post_reviews_route():
+    for client in _client():
+        review = create_review(client, auth_headers(client))
+        assert review["kind"] == "weekly"
+        assert review["goal"]["title"] == "Sleep 7 hours consistently"
+
+
+def test_get_review_by_id_route():
+    for client in _client():
+        headers = auth_headers(client)
+        review = create_review(client, headers)
+        response = client.get(f"/reviews/{review['id']}", headers=headers)
+        assert response.status_code == 200
+        assert response.json()["wins"] == "Protected mornings."
+
+
+def test_patch_review_route():
+    for client in _client():
+        headers = auth_headers(client)
+        review = create_review(client, headers)
+        response = client.patch(f"/reviews/{review['id']}", headers=headers, json={"lessons": "Earlier shutdown matters."})
+        assert response.status_code == 200
+        assert response.json()["lessons"] == "Earlier shutdown matters."
+
+
+def test_get_reviews_due_route():
+    for client in _client():
+        response = client.get("/reviews/due", headers=auth_headers(client))
+        assert response.status_code == 200
+        assert response.json()["daily_done"] is False
 
 
 def test_get_market_stocks_route():

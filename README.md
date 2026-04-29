@@ -118,6 +118,25 @@ Capture:
 - `PATCH /captures/{id}`
 - `POST /captures/{id}/convert`
 
+Goals:
+
+- `GET /goals/areas`
+- `POST /goals/areas`
+- `PATCH /goals/areas/{id}`
+- `GET /goals`
+- `POST /goals`
+- `GET /goals/{id}`
+- `PATCH /goals/{id}`
+- `GET /goals/summary`
+
+Reviews:
+
+- `GET /reviews`
+- `POST /reviews`
+- `GET /reviews/due`
+- `GET /reviews/{id}`
+- `PATCH /reviews/{id}`
+
 Body:
 
 - `GET /workouts`

@@ -15,6 +15,8 @@ CaptureTarget = Literal[
     "stock",
     "build_project",
     "wealth_snapshot",
+    "goal",
+    "review",
 ]
 
 

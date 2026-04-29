@@ -11,6 +11,7 @@ from database import get_db
 from models.body import DailyMetric, Exercise, GolfRound, Workout
 from models.build import BuildProject
 from models.capture import CaptureItem
+from models.goals import Goal, Review
 from models.markets import MarketStock
 from models.mind import Book, Decision, PhilosophyNote
 from models.user import User
@@ -18,6 +19,7 @@ from models.wealth import WealthSnapshot
 from schemas.body import DailyMetricCreate, GolfRoundCreate, WorkoutCreate
 from schemas.build import BuildProjectCreate
 from schemas.capture import CaptureArchive, CaptureConvert, CaptureRead, CaptureStatus, CaptureTarget, CaptureCreate
+from schemas.goals import GoalCreate, ReviewCreate
 from schemas.markets import MarketStockCreate
 from schemas.mind import BookCreate, DecisionCreate, PhilosophyNoteCreate
 from schemas.wealth import WealthSnapshotCreate
@@ -108,6 +110,10 @@ def _create_target(target_type: CaptureTarget, payload: dict, db: Session):
                 setattr(existing, key, value)
             return existing
         return WealthSnapshot(**validated.model_dump())
+    if target_type == "goal":
+        return Goal(**_validate(GoalCreate, payload).model_dump())
+    if target_type == "review":
+        return Review(**_validate(ReviewCreate, payload).model_dump())
     raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Unsupported target type")
 
 

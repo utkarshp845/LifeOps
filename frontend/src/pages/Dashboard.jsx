@@ -4,6 +4,7 @@ import { bodyApi } from "../api/body";
 import { mindApi } from "../api/mind";
 import { captureApi } from "../api/capture";
 import { buildApi } from "../api/build";
+import { goalsApi } from "../api/goals";
 import { marketsApi } from "../api/markets";
 import { wealthApi } from "../api/wealth";
 import QuickCapture from "../components/QuickCapture.jsx";
@@ -29,7 +30,7 @@ export default function Dashboard() {
     let cancelled = false;
     async function load() {
       try {
-        const [workouts, golf, metrics, books, philosophy, decisions, captures, stocks, projects, wealth] = await Promise.all([
+        const [workouts, golf, metrics, books, philosophy, decisions, captures, stocks, projects, wealth, goals, reviews] = await Promise.all([
           bodyApi.getWorkouts(),
           bodyApi.getGolf(),
           bodyApi.getMetrics(1),
@@ -39,10 +40,12 @@ export default function Dashboard() {
           captureApi.getCaptures("open"),
           marketsApi.getStocks(),
           buildApi.getProjects(),
-          wealthApi.getSummary()
+          wealthApi.getSummary(),
+          goalsApi.getSummary(),
+          goalsApi.getReviewDue()
         ]);
         if (!cancelled) {
-          setData({ workouts, golf, metrics, books, philosophy, decisions, captures, stocks, projects, wealth });
+          setData({ workouts, golf, metrics, books, philosophy, decisions, captures, stocks, projects, wealth, goals, reviews });
         }
       } catch (err) {
         if (!cancelled) setError(err.message);
@@ -82,6 +85,26 @@ export default function Dashboard() {
           <p className="journal-text">{data?.captures?.length || 0} open captures</p>
           <a className="text-link" href="#/inbox">
             Process inbox
+          </a>
+        </article>
+
+        <article className="entry mind-module">
+          <h2>Goals</h2>
+          <p className="journal-text">
+            {data?.goals?.active_count || 0} active / {data?.goals?.due_soon_count || 0} due soon
+          </p>
+          <a className="text-link" href="#/goals">
+            Set direction
+          </a>
+        </article>
+
+        <article className="entry mind-module">
+          <h2>Reviews</h2>
+          <p className="journal-text">
+            Daily {data?.reviews?.daily_done ? "done" : "due"} / Weekly {data?.reviews?.weekly_done ? "done" : "due"} / Monthly {data?.reviews?.monthly_done ? "done" : "due"}
+          </p>
+          <a className="text-link" href="#/reviews">
+            Run review
           </a>
         </article>
 

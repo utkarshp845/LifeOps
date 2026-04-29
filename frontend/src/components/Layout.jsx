@@ -4,6 +4,13 @@ const navGroups = [
     links: [["/inbox", "Inbox"]]
   },
   {
+    label: "Direction",
+    links: [
+      ["/goals", "Goals"],
+      ["/reviews", "Reviews"]
+    ]
+  },
+  {
     label: "Body",
     links: [
       ["/workout", "Log Workout"],

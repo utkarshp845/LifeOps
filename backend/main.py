@@ -11,6 +11,7 @@ from routes import auth as auth_routes
 from routes import body as body_routes
 from routes import build as build_routes
 from routes import capture as capture_routes
+from routes import goals as goals_routes
 from routes import markets as markets_routes
 from routes import mind as mind_routes
 from routes import wealth as wealth_routes
@@ -31,6 +32,7 @@ app.include_router(auth_routes.router)
 app.include_router(body_routes.router)
 app.include_router(build_routes.router)
 app.include_router(capture_routes.router)
+app.include_router(goals_routes.router)
 app.include_router(markets_routes.router)
 app.include_router(mind_routes.router)
 app.include_router(wealth_routes.router)
