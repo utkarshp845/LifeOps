@@ -73,6 +73,7 @@ jobs:
           SECRET_KEY: ci-secret-key-for-tests
           JWT_ALGORITHM: HS256
           ACCESS_TOKEN_EXPIRE_MINUTES: 60
+          PYTHONPATH: .
         run: pytest -q
 
       - name: Install frontend dependencies
