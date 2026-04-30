@@ -9,4 +9,5 @@ build/
 *.pyc
 *.pyo
 *.log
+*.pem
 .DS_Store
