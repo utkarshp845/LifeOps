@@ -60,7 +60,7 @@ jobs:
       - name: Run migrations
         working-directory: backend
         env:
-          DATABASE_URL: postgresql+psycopg://life_os:ci-postgres-password@localhost:5432/life_os_test
+          DATABASE_URL: "postgresql+psycopg://life_os:ci-postgres-password@localhost:5432/life_os_test"
           SECRET_KEY: ci-secret-key-for-tests
           JWT_ALGORITHM: HS256
           ACCESS_TOKEN_EXPIRE_MINUTES: 60
@@ -69,7 +69,7 @@ jobs:
       - name: Run backend tests
         working-directory: backend
         env:
-          DATABASE_URL: sqlite+pysqlite:///:memory:
+          DATABASE_URL: "sqlite+pysqlite:///:memory:"
           SECRET_KEY: ci-secret-key-for-tests
           JWT_ALGORITHM: HS256
           ACCESS_TOKEN_EXPIRE_MINUTES: 60
@@ -110,10 +110,10 @@ jobs:
 
       - name: Write production env
         run: |
-          ssh -i ~/.ssh/life-os-key "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
-            "cat > '${{ secrets.EC2_APP_DIR }}/.env'" <<'EOF'
+          cat > production.env <<'EOF'
           ${{ secrets.PRODUCTION_ENV_FILE }}
           EOF
+          scp -i ~/.ssh/life-os-key production.env "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:${{ secrets.EC2_APP_DIR }}/.env"
 
       - name: Deploy compose stack
         run: |
